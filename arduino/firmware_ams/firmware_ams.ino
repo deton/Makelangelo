@@ -9,8 +9,9 @@
 //------------------------------------------------------------------------------
 // CONSTANTS
 //------------------------------------------------------------------------------
-#define MOTHERBOARD 1  // Adafruit Motor Shield 1
+//#define MOTHERBOARD 1  // Adafruit Motor Shield 1
 //#define MOTHERBOARD 2  // Adafruit Motor Shield 2
+#define MOTHERBOARD 3  // ULN2003 stepper driver
 
 // Increase this number to see more output
 #define VERBOSE         (0)
@@ -34,7 +35,9 @@
 // 2.5132741228718345 / 200 = 0.0125663706 thread moved each step.
 // NEMA17 are rated up to 3000RPM.  Adafruit can handle >1000RPM.
 // These numbers directly affect the maximum velocity.
-#define STEPS_PER_TURN  (200.0)
+//#define STEPS_PER_TURN  (200.0)
+// 28BYJ-48
+#define STEPS_PER_TURN  (2037.8864) // 32 * 63.68395 for 4 step sequence
 
 
 #define NUM_TOOLS  (6)
@@ -69,7 +72,7 @@
 #define MAX_BUF         (64)
 
 // servo pin differs based on device
-#define SERVO_PIN       (10)
+#define SERVO_PIN       (12)
 
 #define TIMEOUT_OK      (1000)  // 1/4 with no instruction?  Make sure PC knows we are waiting.
 
@@ -91,6 +94,12 @@
 #define M2_ONESTEP(x)  m2->onestep(x,SINGLE)
 // stacked motor shields have different addresses. The default is 0x60
 #define SHIELD_ADDRESS (0x60)
+#endif
+#if MOTHERBOARD == 3
+#define M1_STEP(steps,dir)  m1.step((dir)*(steps))
+#define M2_STEP(steps,dir)  m2.step((dir)*(steps))
+#define M1_ONESTEP(dir)  m1.step(dir)
+#define M2_ONESTEP(dir)  m2.step(dir)
 #endif
 
 //------------------------------------------------------------------------------
@@ -115,6 +124,10 @@
 #if MOTHERBOARD == 2
 #include <Wire.h>
 #include <Adafruit_MotorShield.h>
+#endif
+
+#if MOTHERBOARD == 3
+#include <Stepper.h>
 #endif
 
 // Default servo library
@@ -145,6 +158,13 @@ static AF_Stepper m2((int)STEPS_PER_TURN, M1_PIN);
 Adafruit_MotorShield AFMS0 = Adafruit_MotorShield(SHIELD_ADDRESS);
 Adafruit_StepperMotor *m1;
 Adafruit_StepperMotor *m2;
+#endif
+#if MOTHERBOARD == 3
+#define STEPS  100
+Stepper m1(STEPS, 8, 10, 9, 11);
+Stepper m2(STEPS, 2, 4, 3, 5);
+#define FORWARD 1
+#define BACKWARD (-1)
 #endif
 
 static Servo s1;
@@ -716,8 +736,8 @@ void disable_motors() {
 
 
 void activate_motors() {
-  M1_STEP(1,1);  M1_STEP(1,-1);
-  M2_STEP(1,1);  M2_STEP(1,-1);
+  M1_STEP(1,M1_REEL_OUT);  M1_STEP(1,M1_REEL_IN);
+  M2_STEP(1,M2_REEL_OUT);  M2_STEP(1,M2_REEL_IN);
 }
 
 
@@ -778,20 +798,20 @@ void processConfig() {
   char j=parsenumber('J',0);
   if(i!=0) {
     if(i>0) {
-      M1_REEL_IN  = HIGH;
-      M1_REEL_OUT = LOW;
+      M1_REEL_IN  = FORWARD;
+      M1_REEL_OUT = BACKWARD;
     } else {
-      M1_REEL_IN  = LOW;
-      M1_REEL_OUT = HIGH;
+      M1_REEL_IN  = BACKWARD;
+      M1_REEL_OUT = FORWARD;
     }
   }
   if(j!=0) {
     if(j>0) {
-      M2_REEL_IN  = HIGH;
-      M2_REEL_OUT = LOW;
+      M2_REEL_IN  = FORWARD;
+      M2_REEL_OUT = BACKWARD;
     } else {
-      M2_REEL_IN  = LOW;
-      M2_REEL_OUT = HIGH;
+      M2_REEL_IN  = BACKWARD;
+      M2_REEL_OUT = FORWARD;
     }
   }
   
@@ -1001,6 +1021,10 @@ void setup() {
   AFMS0.begin();
   m1 = AFMS0.getStepper(STEPS_PER_TURN, M2_PIN);
   m2 = AFMS0.getStepper(STEPS_PER_TURN, M1_PIN);
+#endif
+#if MOTHERBOARD == 3
+  m1.setSpeed(200);
+  m2.setSpeed(200);
 #endif
 
   // initialize the scale
