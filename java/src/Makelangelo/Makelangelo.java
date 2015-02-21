@@ -1263,9 +1263,9 @@ public class Makelangelo
 			int line_number = gcode.linesProcessed;
 			gcode.linesProcessed++;
 			line=gcode.lines.get(line_number).trim();
-			if(line.length()>3) {
+			//if(line.length()>3) { // XXX: comment out to avoid BADLINENUM 
 				line="N"+line_number+" "+line;
-			}
+			//}
 			line += GenerateChecksum(line);
 			
 			previewPane.setLinesProcessed(gcode.linesProcessed);
