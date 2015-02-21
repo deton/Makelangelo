@@ -384,6 +384,10 @@ public class Makelangelo
 		lastLineWasCue=false;
 		UpdateMenuBar();
 		PlayConnectSound();
+		try {
+			// request HELLO response to update portConfirmed
+			serialPort.writeBytes("M100\n".getBytes());
+		} catch (SerialPortException e) {}
 		
 		return 0;
 	}
