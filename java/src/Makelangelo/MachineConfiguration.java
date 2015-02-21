@@ -161,6 +161,7 @@ public class MachineConfiguration {
 		c.ipadx=3;
 		c.anchor=GridBagConstraints.EAST;
 		d.anchor=GridBagConstraints.WEST;
+		d.fill=GridBagConstraints.HORIZONTAL;
 		
 		c.gridx=0; c.gridy=y; driver.add(new JLabel(MultilingualSupport.getSingleton().get("MachineWidth")),c);		d.gridx=1;	d.gridy=y;	driver.add(mw,d);
 		c.gridx=2; c.gridy=y; driver.add(new JLabel(MultilingualSupport.getSingleton().get("MachineHeight")),c);	d.gridx=3;	d.gridy=y;	driver.add(mh,d);
