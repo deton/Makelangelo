@@ -12,6 +12,8 @@
 //#define MOTHERBOARD 1  // Adafruit Motor Shield 1
 //#define MOTHERBOARD 2  // Adafruit Motor Shield 2
 #define MOTHERBOARD 3  // ULN2003 stepper driver
+// XXX: change comment out #include of each motor shield/driver
+//      (to avoid overflow of sketch size)
 
 // Increase this number to see more output
 #define VERBOSE         (0)
@@ -20,6 +22,9 @@
 //#define USE_SD_CARD       (1)
 // Comment out this line to disable findHome and limit switches
 //#define USE_LIMIT_SWITCH  (1)
+
+// accept command from MPU for Arduino Yun/Linino ONE
+#define CMD_FROM_MPU 1
 
 
 // which motor is on which pin?
@@ -116,14 +121,14 @@
 // INCLUDES
 //------------------------------------------------------------------------------
 #if MOTHERBOARD == 1
-#include <SPI.h>  // pkm fix for Arduino 1.5
+//#include <SPI.h>  // pkm fix for Arduino 1.5
 // Adafruit motor driver library
-#include <AFMotorDrawbot.h>
+//#include <AFMotorDrawbot.h>
 #endif
 
 #if MOTHERBOARD == 2
-#include <Wire.h>
-#include <Adafruit_MotorShield.h>
+//#include <Wire.h>
+//#include <Adafruit_MotorShield.h>
 #endif
 
 #if MOTHERBOARD == 3
@@ -135,7 +140,7 @@
 
 // SD card library
 #ifdef USE_SD_CARD
-#include <SD.h>
+//#include <SD.h> // XXX: avoid compile error on File class for <Console.h>
 #endif
 
 // Saving config
@@ -143,6 +148,10 @@
 #include <Arduino.h>  // for type definitions
 
 #include "Vector3.h"
+
+#ifdef CMD_FROM_MPU  // accept command from MPU for Arduino Yun/Linino ONE
+#include <Console.h>
+#endif
 
 
 //------------------------------------------------------------------------------
@@ -985,9 +994,9 @@ static void processCommand() {
 /**
  * prepares the input buffer to receive a new message and tells the serial connected device it is ready for more.
  */
-void ready() {
+void ready(Stream& stream) {
   sofar=0;  // clear input buffer
-  Serial.print(F("\n> "));  // signal ready to receive input
+  stream.print(F("\n> "));  // signal ready to receive input
   last_cmd_time = millis();
 }
 
@@ -1010,6 +1019,10 @@ void setup() {
   Serial.begin(BAUD);
   Serial.print(F("\n\nHELLO WORLD! I AM DRAWBOT #"));
   Serial.println(robot_uid);
+#ifdef CMD_FROM_MPU
+  Bridge.begin(115200);
+  Console.begin();
+#endif
   
 #ifdef USE_SD_CARD
   SD.begin();
@@ -1050,16 +1063,16 @@ void setup() {
   
   // display the help at startup.
   help();
-  ready();
+  ready(Serial);
 }
 
 
 //------------------------------------------------------------------------------
 // See: http://www.marginallyclever.com/2011/10/controlling-your-arduino-through-the-serial-monitor/
-void Serial_listen() {
+void Serial_listen(Stream& stream) {
   // listen for serial commands
-  while(Serial.available() > 0) {
-    char c = Serial.read();
+  while(stream.available() > 0) {
+    char c = stream.read();
     if(sofar<MAX_BUF) buffer[sofar++]=c;
     if(c=='\n' || c=='\r') {
       buffer[sofar]=0;
@@ -1071,7 +1084,7 @@ void Serial_listen() {
    
       // do something with the command
       processCommand();
-      ready();
+      ready(stream);
       break;
     }
   }
@@ -1080,13 +1093,18 @@ void Serial_listen() {
 
 //------------------------------------------------------------------------------
 void loop() {
-  Serial_listen();
+  Serial_listen(Serial);
+#ifdef CMD_FROM_MPU
+  if(Console) {
+    Serial_listen(Console);
+  }
+#endif
   
   // The PC will wait forever for the ready signal.
   // if Arduino hasn't received a new instruction in a while, send ready() again
   // just in case USB garbled ready and each half is waiting on the other.
   if( (millis() - last_cmd_time) > TIMEOUT_OK ) {
-    ready();
+    ready(Serial);
   }
 }
 
