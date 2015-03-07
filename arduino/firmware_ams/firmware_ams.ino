@@ -26,7 +26,6 @@
 // accept command from MPU for Arduino Yun/Linino ONE
 #define CMD_FROM_MPU 1
 
-
 // which motor is on which pin?
 #define M1_PIN          (1)
 #define M2_PIN          (2)
@@ -153,7 +152,6 @@
 #include <Console.h>
 #endif
 
-
 //------------------------------------------------------------------------------
 // VARIABLES
 //------------------------------------------------------------------------------
@@ -250,11 +248,11 @@ static void adjustSpoolDiameter(float diameter1,float diameter2) {
   THREADPERSTEP2 = SPOOL_CIRC/STEPS_PER_TURN;  // thread per step
 
 #if VERBOSE > 2
-  Serial.print(F("SpoolDiameter1 = "));  Serial.println(SPOOL_DIAMETER1,3);
-  Serial.print(F("SpoolDiameter2 = "));  Serial.println(SPOOL_DIAMETER2,3);
-  Serial.print(F("THREADPERSTEP1="));  Serial.println(THREADPERSTEP1,3);
-  Serial.print(F("THREADPERSTEP2="));  Serial.println(THREADPERSTEP2,3);
-  Serial.print(F("MAX_VEL="));  Serial.println(MAX_VEL,3);
+  Console.print(F("SpoolDiameter1 = "));  Console.println(SPOOL_DIAMETER1,3);
+  Console.print(F("SpoolDiameter2 = "));  Console.println(SPOOL_DIAMETER2,3);
+  Console.print(F("THREADPERSTEP1="));  Console.println(THREADPERSTEP1,3);
+  Console.print(F("THREADPERSTEP2="));  Console.println(THREADPERSTEP2,3);
+  Console.print(F("MAX_VEL="));  Console.println(MAX_VEL,3);
 #endif
 }
 
@@ -291,16 +289,16 @@ static void setFeedRate(float v) {
   step_delay = 1000000.0 / v;
  
 #if VERBOSE > 1
-  Serial.print(F("feed_rate="));  Serial.println(feed_rate);
-  Serial.print(F("step_delay="));  Serial.println(step_delay);
+  Console.print(F("feed_rate="));  Console.println(feed_rate);
+  Console.print(F("step_delay="));  Console.println(step_delay);
 #endif
 }
 
 
 //------------------------------------------------------------------------------
 static void printFeedRate() {
-  Serial.print(F("F"));
-  Serial.println(feed_rate);
+  Console.print(F("F"));
+  Console.println(feed_rate);
 }
 
 
@@ -505,13 +503,13 @@ static void teleport(float x,float y) {
 
 //------------------------------------------------------------------------------
 static void help() {
-  Serial.print(F("\n\nHELLO WORLD! I AM DRAWBOT #"));
-  Serial.println(robot_uid);
-  Serial.println(F("M100 - display this message"));
-  Serial.println(F("M101 [Tx.xx] [Bx.xx] [Rx.xx] [Lx.xx]"));
-  Serial.println(F("       - display/update board dimensions."));
-  Serial.println(F("As well as the following G-codes (http://en.wikipedia.org/wiki/G-code):"));
-  Serial.println(F("G00,G01,G02,G03,G04,G28,G90,G91,G92,M18,M114"));
+  Console.print(F("\n\nHELLO WORLD! I AM DRAWBOT #"));
+  Console.println(robot_uid);
+  Console.println(F("M100 - display this message"));
+  Console.println(F("M101 [Tx.xx] [Bx.xx] [Rx.xx] [Lx.xx]"));
+  Console.println(F("       - display/update board dimensions."));
+  Console.println(F("As well as the following G-codes (http://en.wikipedia.org/wiki/G-code):"));
+  Console.println(F("G00,G01,G02,G03,G04,G28,G90,G91,G92,M18,M114"));
 }
 
 
@@ -519,12 +517,12 @@ static void help() {
 // find the current robot position and 
 static void FindHome() {
 #ifdef USE_LIMIT_SWITCH
-  Serial.println(F("Homing..."));
+  Console.println(F("Homing..."));
   
   if(readSwitches()) {
-    Serial.println(F("** ERROR **"));
-    Serial.println(F("Problem: Plotter is already touching switches."));
-    Serial.println(F("Solution: Please unwind the strings a bit and try again."));
+    Console.println(F("** ERROR **"));
+    Console.println(F("Problem: Plotter is already touching switches."));
+    Console.println(F("Solution: Please unwind the strings a bit and try again."));
     return;
   }
   
@@ -532,7 +530,7 @@ static void FindHome() {
   int safe_out=50;
   
   // reel in the left motor until contact is made.
-  Serial.println(F("Find left..."));
+  Console.println(F("Find left..."));
   do {
     M1_STEP(1,M1_REEL_IN );
     M2_STEP(1,M2_REEL_OUT);
@@ -549,7 +547,7 @@ static void FindHome() {
   laststep1=safe_out;
   
   // reel in the right motor until contact is made
-  Serial.println(F("Find right..."));
+  Console.println(F("Find right..."));
   do {
     M1_STEP(1,M1_REEL_OUT);
     M2_STEP(1,M2_REEL_IN );
@@ -565,7 +563,7 @@ static void FindHome() {
   }
   laststep2=safe_out;
   
-  Serial.println(F("Centering..."));
+  Console.println(F("Centering..."));
   line(0,0,posz);
 #endif // USE_LIMIT_SWITCH
 }
@@ -573,26 +571,26 @@ static void FindHome() {
 
 //------------------------------------------------------------------------------
 static void where() {
-  Serial.print(F("X"));
-  Serial.print(posx);
-  Serial.print(F(" Y"));
-  Serial.print(posy);
-  Serial.print(F(" Z"));
-  Serial.print(posz);
+  Console.print(F("X"));
+  Console.print(posx);
+  Console.print(F(" Y"));
+  Console.print(posy);
+  Console.print(F(" Z"));
+  Console.print(posz);
   printFeedRate();
-  Serial.print(F("\n"));
+  Console.print(F("\n"));
 }
 
 
 //------------------------------------------------------------------------------
 static void printConfig() {
-  Serial.print(m1d);              Serial.print(F("="));  
-  Serial.print(limit_top);        Serial.print(F(","));
-  Serial.print(limit_left);       Serial.print(F("\n"));
-  Serial.print(m2d);              Serial.print(F("="));  
-  Serial.print(limit_top);        Serial.print(F(","));
-  Serial.print(limit_right);      Serial.print(F("\n"));
-  Serial.print(F("Bottom="));     Serial.println(limit_bottom);
+  Console.print(m1d);              Console.print(F("="));  
+  Console.print(limit_top);        Console.print(F(","));
+  Console.print(limit_left);       Console.print(F("\n"));
+  Console.print(m2d);              Console.print(F("="));  
+  Console.print(limit_top);        Console.print(F(","));
+  Console.print(limit_right);      Console.print(F("\n"));
+  Console.print(F("Bottom="));     Console.println(limit_bottom);
   where();
 }
 
@@ -658,7 +656,7 @@ static void LoadConfig() {
                         (float)EEPROM_readLong(ADDR_SPOOL_DIA2)/10000.0f);   //3 decimal places of percision is enough   
   } else {
     // Code should not get here if it does we should display some meaningful error message
-    Serial.println(F("An Error Occurred during LoadConfig"));
+    Console.println(F("An Error Occurred during LoadConfig"));
   }
 }
 
@@ -671,19 +669,19 @@ void SD_PrintDirectory(File dir, int numTabs) {
      File entry =  dir.openNextFile();
      if (! entry) {
        // no more files
-       Serial.println(F("**nomorefiles**"));
+       Console.println(F("**nomorefiles**"));
      }
      for (uint8_t i=0; i<numTabs; i++) {
-       Serial.print('\t');
+       Console.print('\t');
      }
-     Serial.print(entry.name());
+     Console.print(entry.name());
      if (entry.isDirectory()) {
-       Serial.println(F("/"));
+       Console.println(F("/"));
        SD_PrintDirectory(entry, numTabs+1);
      } else {
        // files have sizes, directories do not
-       Serial.print(F("\t\t"));
-       Serial.println(entry.size(), DEC);
+       Console.print(F("\t\t"));
+       Console.println(entry.size(), DEC);
      }
    }
 }
@@ -704,9 +702,9 @@ static void SD_ProcessFile(char *filename) {
 #ifdef USE_SD_CARD
   File f=SD.open(filename);
   if(!f) {
-    Serial.print(F("File "));
-    Serial.print(filename);
-    Serial.println(F(" not found."));
+    Console.print(F("File "));
+    Console.print(filename);
+    Console.println(F(" not found."));
     return;
   }
   
@@ -719,7 +717,7 @@ static void SD_ProcessFile(char *filename) {
       // end string
       buffer[sofar]=0;
       // print for our benefit
-      Serial.println(buffer);
+      Console.println(buffer);
       // process command
       processCommand();
       // reset buffer for next line
@@ -843,8 +841,8 @@ static void processCommand() {
   if(cmd!=-1 && buffer[0] == 'N') {  // line number must appear first on the line
     if( cmd != line_number ) {
       // Wrong line number error
-      Serial.print(F("BADLINENUM "));
-      Serial.println(line_number);
+      Console.print(F("BADLINENUM "));
+      Console.println(line_number);
       return;
     }
     
@@ -858,13 +856,13 @@ static void processCommand() {
       c++; // skip *
       unsigned char against = (unsigned char)strtod(buffer+c,NULL);
       if( checksum != against ) {
-        Serial.print(F("BADCHECKSUM "));
-        Serial.println(line_number);
+        Console.print(F("BADCHECKSUM "));
+        Console.println(line_number);
         return;
       }
     } else {
-      Serial.print(F("NOCHECKSUM "));
-      Serial.println(line_number);
+      Console.print(F("NOCHECKSUM "));
+      Console.println(line_number);
       return;
     }
   
@@ -981,8 +979,8 @@ static void processCommand() {
     }
     break;
   case 2:
-    Serial.print('L');  Serial.print(SPOOL_DIAMETER1);
-    Serial.print(F(" R"));   Serial.println(SPOOL_DIAMETER2);
+    Console.print('L');  Console.print(SPOOL_DIAMETER1);
+    Console.print(F(" R"));   Console.println(SPOOL_DIAMETER2);
     break;
   case 3:  SD_ListFiles();  break;    // read directory
   case 4:  SD_ProcessFile(strchr(buffer,' ')+1);  break;  // read file
@@ -994,9 +992,9 @@ static void processCommand() {
 /**
  * prepares the input buffer to receive a new message and tells the serial connected device it is ready for more.
  */
-void ready(Stream& stream) {
+void ready() {
   sofar=0;  // clear input buffer
-  stream.print(F("\n> "));  // signal ready to receive input
+  Console.print(F("\n> "));  // signal ready to receive input
   last_cmd_time = millis();
 }
 
@@ -1063,28 +1061,28 @@ void setup() {
   
   // display the help at startup.
   help();
-  ready(Serial);
+  ready();
 }
 
 
 //------------------------------------------------------------------------------
 // See: http://www.marginallyclever.com/2011/10/controlling-your-arduino-through-the-serial-monitor/
-void Serial_listen(Stream& stream) {
+void Serial_listen() {
   // listen for serial commands
-  while(stream.available() > 0) {
-    char c = stream.read();
+  while(Console.available() > 0) {
+    char c = Console.read();
     if(sofar<MAX_BUF) buffer[sofar++]=c;
     if(c=='\n' || c=='\r') {
       buffer[sofar]=0;
       
 #if VERBOSE > 0
       // echo confirmation
-      Serial.println(buffer);
+      Console.println(buffer);
 #endif
    
       // do something with the command
       processCommand();
-      ready(stream);
+      ready();
       break;
     }
   }
@@ -1093,18 +1091,13 @@ void Serial_listen(Stream& stream) {
 
 //------------------------------------------------------------------------------
 void loop() {
-  Serial_listen(Serial);
-#ifdef CMD_FROM_MPU
-  if(Console) {
-    Serial_listen(Console);
-  }
-#endif
+  Serial_listen();
   
   // The PC will wait forever for the ready signal.
   // if Arduino hasn't received a new instruction in a while, send ready() again
   // just in case USB garbled ready and each half is waiting on the other.
   if( (millis() - last_cmd_time) > TIMEOUT_OK ) {
-    ready(Serial);
+    ready();
   }
 }
 
