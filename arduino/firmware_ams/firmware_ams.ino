@@ -168,8 +168,16 @@ Adafruit_StepperMotor *m2;
 #endif
 #if MOTHERBOARD == 3
 #define STEPS  100
-Stepper m1(STEPS, 8, 10, 9, 11);
-Stepper m2(STEPS, 2, 4, 3, 5);
+#define PIN11 8
+#define PIN12 10
+#define PIN13 9
+#define PIN14 11
+#define PIN21 2
+#define PIN22 4
+#define PIN23 3
+#define PIN24 5
+Stepper m1(STEPS, PIN11, PIN12, PIN13, PIN14);
+Stepper m2(STEPS, PIN21, PIN22, PIN23, PIN24);
 #define FORWARD 1
 #define BACKWARD (-1)
 #endif
@@ -731,6 +739,7 @@ static void SD_ProcessFile(char *filename) {
 
 
 void disable_motors() {
+  s1.detach();
 #if MOTHERBOARD == 1
   m1.release();
   m2.release();
@@ -739,10 +748,31 @@ void disable_motors() {
   m1->release();
   m2->release();
 #endif
+#if MOTHERBOARD == 3
+  pinMode(PIN11, LOW);
+  pinMode(PIN12, LOW);
+  pinMode(PIN13, LOW);
+  pinMode(PIN14, LOW);
+  pinMode(PIN21, LOW);
+  pinMode(PIN22, LOW);
+  pinMode(PIN23, LOW);
+  pinMode(PIN24, LOW);
+#endif
 }
 
 
 void activate_motors() {
+  s1.attach(SERVO_PIN);
+#if MOTHERBOARD == 3
+  pinMode(PIN11, OUTPUT);
+  pinMode(PIN12, OUTPUT);
+  pinMode(PIN13, OUTPUT);
+  pinMode(PIN14, OUTPUT);
+  pinMode(PIN21, OUTPUT);
+  pinMode(PIN22, OUTPUT);
+  pinMode(PIN23, OUTPUT);
+  pinMode(PIN24, OUTPUT);
+#endif
   M1_STEP(1,M1_REEL_OUT);  M1_STEP(1,M1_REEL_IN);
   M2_STEP(1,M2_REEL_OUT);  M2_STEP(1,M2_REEL_IN);
 }
