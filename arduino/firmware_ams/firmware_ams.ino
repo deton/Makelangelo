@@ -919,6 +919,9 @@ static void processCommand() {
   switch(cmd) {
   case 0:
   case 1: {  // line
+      if(!s1.attached()) {
+        activate_motors();
+      }
       Vector3 offset=get_end_plus_offset();
       setFeedRate(parsenumber('F',feed_rate));
       line_safe( parsenumber('X',(absolute_mode?offset.x:0)*10)*0.1 + (absolute_mode?0:offset.x),
@@ -928,6 +931,9 @@ static void processCommand() {
     }
   case 2:
   case 3: {  // arc
+      if(!s1.attached()) {
+        activate_motors();
+      }
       Vector3 offset=get_end_plus_offset();
       setFeedRate(parsenumber('F',feed_rate));
       arc(parsenumber('I',(absolute_mode?offset.x:0)*10)*0.1 + (absolute_mode?0:offset.x),
@@ -980,6 +986,9 @@ static void processCommand() {
   cmd=parsenumber('D',-1);
   switch(cmd) {
   case 0: {
+      if(!s1.attached()) {
+        activate_motors();
+      }
       // move one motor
       char *ptr=strchr(buffer,' ')+1;
       int amount = atoi(ptr+1);
